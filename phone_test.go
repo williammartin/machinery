@@ -12,7 +12,6 @@ var _ = Describe("A Phone Call", func() {
 		callCount := 0
 		callInProgress := false
 
-		inCradle := machinery.NewState("InCradle")
 		offHook := machinery.NewState("OffHook")
 		dialing := machinery.NewState("Dialing")
 		connected := machinery.NewState("Connected")
@@ -27,17 +26,11 @@ var _ = Describe("A Phone Call", func() {
 		})
 
 		blueprint := machinery.NewBlueprint()
-		blueprint.Connect(inCradle, offHook, "Unhook")
-		blueprint.Connect(offHook, inCradle, "Hook")
 		blueprint.Connect(offHook, dialing, "Dial")
-		blueprint.Connect(offHook, connected, "Connect")
 		blueprint.Connect(dialing, connected, "Connect")
 		blueprint.Connect(connected, offHook, "Hangup")
 
-		machine := machinery.NewMachine(blueprint, inCradle)
-		Expect(machine.State()).To(Equal(inCradle))
-
-		machine.Fire("Unhook")
+		machine := machinery.NewMachine(blueprint, offHook)
 		Expect(machine.State()).To(Equal(offHook))
 
 		machine.Fire("Dial")
@@ -51,8 +44,5 @@ var _ = Describe("A Phone Call", func() {
 		machine.Fire("Hangup")
 		Expect(machine.State()).To(Equal(offHook))
 		Expect(callInProgress).To(BeFalse())
-
-		machine.Fire("Hook")
-		Expect(machine.State()).To(Equal(inCradle))
 	})
 })
